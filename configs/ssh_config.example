@@ -1,0 +1,126 @@
+# mllab-network SSH client config (template).
+#
+# Copy to ~/.ssh/config (or `Include`-import it) and replace the two sentinels
+# below with values from your .env:
+#   <<WAN_IP>>     -> the public IP of your lab gateway
+#   <<ADMIN_USER>> -> e.g. ops (matches SERVER_SECONDARY_USER in .env)
+#   <<PRIMARY_USER>>-> e.g. admin (matches SERVER_PRIMARY_USER in .env)
+#
+# Port numbers follow the convention external_port = 12 + last-two-digits-of-internal-IP.
+# Update the Port and internal IP to match your inventory/hosts.yml.
+
+# -----------------------------------------------------------------------------
+# WAN hosts (reachable from anywhere the public IP is routable)
+# -----------------------------------------------------------------------------
+
+Host server06
+    HostName <<WAN_IP>>
+    Port 12060
+    User <<PRIMARY_USER>>
+
+Host server08
+    HostName <<WAN_IP>>
+    Port 12080
+    User <<PRIMARY_USER>>
+
+Host server09
+    HostName <<WAN_IP>>
+    Port 12090
+    User <<PRIMARY_USER>>
+
+Host server11
+    HostName <<WAN_IP>>
+    Port 12110
+    User <<PRIMARY_USER>>
+
+Host server13
+    HostName <<WAN_IP>>
+    Port 12130
+    User <<PRIMARY_USER>>
+
+Host server15
+    HostName <<WAN_IP>>
+    Port 12150
+    User <<PRIMARY_USER>>
+
+Host server20
+    HostName <<WAN_IP>>
+    Port 12200
+    User <<ADMIN_USER>>
+
+Host server21
+    HostName <<WAN_IP>>
+    Port 12210
+    User <<ADMIN_USER>>
+
+Host server22
+    HostName <<WAN_IP>>
+    Port 12220
+    User <<ADMIN_USER>>
+
+Host server23
+    HostName <<WAN_IP>>
+    Port 12230
+    User <<ADMIN_USER>>
+
+Host nas
+    HostName <<WAN_IP>>
+    Port 12990
+    User <<PRIMARY_USER>>
+
+# -----------------------------------------------------------------------------
+# USG router (admin path; do NOT expose to WAN)
+# -----------------------------------------------------------------------------
+
+Host usg
+    HostName 192.168.1.1
+    Port 22
+    User admin
+
+# -----------------------------------------------------------------------------
+# LAN equivalents (use when you're physically in the lab)
+# -----------------------------------------------------------------------------
+
+Host server06-lan
+    HostName 192.168.1.106
+    User <<PRIMARY_USER>>
+
+Host server08-lan
+    HostName 192.168.1.108
+    User <<PRIMARY_USER>>
+
+Host server09-lan
+    HostName 192.168.1.109
+    User <<PRIMARY_USER>>
+
+Host server11-lan
+    HostName 192.168.1.111
+    User <<PRIMARY_USER>>
+
+Host server13-lan
+    HostName 192.168.1.113
+    User <<PRIMARY_USER>>
+
+Host server15-lan
+    HostName 192.168.1.115
+    User <<PRIMARY_USER>>
+
+Host server20-lan
+    HostName 192.168.1.120
+    User <<ADMIN_USER>>
+
+Host server21-lan
+    HostName 192.168.1.121
+    User <<ADMIN_USER>>
+
+Host server22-lan
+    HostName 192.168.1.122
+    User <<ADMIN_USER>>
+
+Host server23-lan
+    HostName 192.168.1.123
+    User <<ADMIN_USER>>
+
+Host nas-lan
+    HostName 192.168.1.129
+    User <<PRIMARY_USER>>

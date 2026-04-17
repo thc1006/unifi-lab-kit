@@ -1,0 +1,51 @@
+{
+  "_comment": "USG config.gateway.json template. Drop into the Controller's sites/default/ directory for NAT hairpin + WAN IP alias. Replace the two sentinel addresses with your own values before use.",
+  "interfaces": {
+    "ethernet": {
+      "eth0": {
+        "address": [
+          "<<WAN_IP_ALIAS>>/24",
+          "<<WAN_IP>>/24"
+        ]
+      }
+    }
+  },
+  "service": {
+    "nat": {
+      "rule": {
+        "6001": {
+          "description": "NAT Hairpin - allow LAN clients to reach port forwards via WAN IP",
+          "destination": {
+            "address": "<<WAN_IP>>"
+          },
+          "inbound-interface": "eth1",
+          "inside-address": {
+            "address": null
+          },
+          "log": "disable",
+          "protocol": "all",
+          "source": {
+            "address": "<<LAN_SUBNET>>"
+          },
+          "type": "masquerade"
+        },
+        "6002": {
+          "description": "NAT Hairpin - WAN alias (e.g. for a NAS that needs its own public IP)",
+          "destination": {
+            "address": "<<WAN_IP_ALIAS>>"
+          },
+          "inbound-interface": "eth1",
+          "inside-address": {
+            "address": null
+          },
+          "log": "disable",
+          "protocol": "all",
+          "source": {
+            "address": "<<LAN_SUBNET>>"
+          },
+          "type": "masquerade"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,148 @@
+# mllab-network inventory template.
+#
+# Copy to inventory/hosts.yml and fill in real values. hosts.yml is gitignored;
+# hosts.example.yml is the committed structure reference.
+#
+# Tools read this file via src/mllab_net/config.py.
+
+gateway:
+  # USG WAN-side (public)
+  wan_ip: "REPLACE_ME_WAN_IP"
+  wan_gateway: "REPLACE_ME_WAN_GATEWAY"
+  wan_netmask: "255.255.255.0"
+  wan_alias: "REPLACE_ME_WAN_ALIAS_OR_NULL"
+  # USG LAN-side
+  lan_ip: "192.168.1.1"
+  lan_subnet: "192.168.1.0/24"
+  # MAC (needed for Controller adopt / force-provision API)
+  mac: "aa:bb:cc:dd:ee:ff"
+
+controller:
+  # Where the UniFi Controller actually runs (Docker on NAS in the reference lab)
+  host: "192.168.1.129"
+  https_port: 8443
+  inform_port: 8080
+  docker_container: "unifi"
+
+nas:
+  ip: "192.168.1.129"
+  # Secondary "public" IP assigned via WAN alias, if you run services on it
+  wan_alias_ip: "REPLACE_ME_WAN_ALIAS_OR_NULL"
+  # External SSH port (port-forwarded from WAN_IP:<port> to NAS:22)
+  external_ssh_port: 12990
+
+# Servers that are online and managed.
+# external_port convention: 12 + last two digits of internal_ip.
+servers:
+  - name: server06
+    internal_ip: "192.168.1.106"
+    external_port: 12060
+    mac: "REPLACE_ME"
+    user_profile: primary         # uses SERVER_PRIMARY_USER from .env
+    cpu: "i7-7700"
+    ram_gb: 64
+    gpu: "RTX 3090 24G"
+    ip_mode: dhcp_reservation     # one of: dhcp_reservation, static_netplan, static_nmcli
+
+  - name: server08
+    internal_ip: "192.168.1.108"
+    external_port: 12080
+    mac: "REPLACE_ME"
+    user_profile: primary
+    cpu: "i9-11900kf"
+    ram_gb: 128
+    gpu: "RTX 4090 24G"
+    ip_mode: dhcp_reservation
+
+  - name: server09
+    internal_ip: "192.168.1.109"
+    external_port: 12090
+    mac: "REPLACE_ME"
+    user_profile: primary
+    cpu: "i9-11900kf"
+    ram_gb: 128
+    gpu: "RTX 4090 24G"
+    ip_mode: dhcp_reservation
+
+  - name: server11
+    internal_ip: "192.168.1.111"
+    external_port: 12110
+    mac: "REPLACE_ME"
+    user_profile: primary
+    cpu: "i9-10900K"
+    ram_gb: 128
+    gpu: "RTX 4090 24G"
+    ip_mode: static_nmcli
+
+  - name: server13
+    internal_ip: "192.168.1.113"
+    external_port: 12130
+    mac: "REPLACE_ME"
+    user_profile: primary
+    cpu: "AMD Threadripper 2950X"
+    ram_gb: 128
+    gpu: "2x RTX A6000 48G"
+    ip_mode: static_netplan
+
+  - name: server15
+    internal_ip: "192.168.1.115"
+    external_port: 12150
+    mac: "REPLACE_ME"
+    user_profile: primary
+    cpu: "unknown"
+    ram_gb: 64
+    gpu: "RTX 6000 Ada 49G"
+    ip_mode: dhcp_reservation
+
+  - name: server20
+    internal_ip: "192.168.1.120"
+    external_port: 12200
+    mac: "REPLACE_ME"
+    user_profile: secondary       # uses SERVER_SECONDARY_USER from .env
+    cpu: "Ultra 7 265K"
+    ram_gb: 64
+    gpu: "2x RTX 3090"
+    ip_mode: dhcp_reservation
+
+  - name: server21
+    internal_ip: "192.168.1.121"
+    external_port: 12210
+    mac: "REPLACE_ME"
+    user_profile: secondary
+    gpu: "RTX 4090"
+    ip_mode: dhcp_reservation
+
+  - name: server22
+    internal_ip: "192.168.1.122"
+    external_port: 12220
+    mac: "REPLACE_ME"
+    user_profile: secondary
+    ram_gb: 64
+    gpu: "RTX 4090 24G"
+    ip_mode: dhcp_reservation
+
+  - name: server23
+    internal_ip: "192.168.1.123"
+    external_port: 12230
+    mac: "REPLACE_ME"
+    user_profile: secondary
+    cpu: "Ultra 7 265K"
+    ram_gb: 128
+    gpu: "RTX PRO 6000 98G"
+    ip_mode: dhcp_reservation
+
+# NAS SSH port-forward is described under nas: above; include it here only
+# if you want it treated uniformly by the scanner.
+
+# Offline servers — present on the cable plant, powered off for now.
+# Keep them listed so audits know about them without flagging as unknown.
+offline_servers:
+  - { name: server01, internal_ip: "192.168.1.101" }
+  - { name: server02, internal_ip: "192.168.1.102" }
+  - { name: server03, internal_ip: "192.168.1.103" }
+  - { name: server04, internal_ip: "192.168.1.104" }
+  - { name: server05, internal_ip: "192.168.1.105" }
+  - { name: server07, internal_ip: "192.168.1.107" }
+  - { name: server10, internal_ip: "192.168.1.110" }
+  - { name: server12, internal_ip: "192.168.1.112" }
+  - { name: server14, internal_ip: "192.168.1.114" }

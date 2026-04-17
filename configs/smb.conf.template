@@ -1,0 +1,57 @@
+[global]
+   # Server identity
+   workgroup = ${SAMBA_WORKGROUP}
+   server string = ${SAMBA_WORKGROUP} NAS
+   netbios name = ${SAMBA_NETBIOS}
+
+   # Security — bind to LAN interface only and restrict hosts
+   bind interfaces only = yes
+   interfaces = ${NAS_IP}
+   hosts allow = ${SAMBA_HOSTS_ALLOW}
+   hosts deny = 0.0.0.0/0
+
+   # Protocol security — SMB2 or higher only
+   server min protocol = SMB2_10
+   disable netbios = yes
+   wins support = no
+
+   # Authentication
+   security = user
+   map to guest = never
+   passdb backend = tdbsam
+
+   # Performance (ML-workload tuned: lots of medium-to-large sequential I/O)
+   aio read size = 1
+   aio write size = 1
+   use sendfile = yes
+
+   # Logging
+   log file = /var/log/samba/log.%m
+   max log size = 1000
+   log level = 1
+
+[public]
+   comment = Shared user folders
+   path = /srv/nas/public
+   browseable = yes
+   read only = no
+   create mask = 0775
+   directory mask = 0775
+   valid users = ${SERVER_PRIMARY_USER}
+
+[server]
+   comment = Server backups and datasets (read/write)
+   path = /srv/nas/server
+   browseable = yes
+   read only = no
+   create mask = 0775
+   directory mask = 0775
+   valid users = ${SERVER_PRIMARY_USER}
+
+[datasets]
+   comment = ML datasets (read-only)
+   path = /srv/nas/server/datasets
+   browseable = yes
+   read only = yes
+   guest ok = no
+   valid users = ${SERVER_PRIMARY_USER}
