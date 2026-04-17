@@ -1,0 +1,66 @@
+[build-system]
+requires = ["hatchling>=1.24"]
+build-backend = "hatchling.build"
+
+[project]
+name = "mllab-network"
+version = "0.1.0"
+description = "Reproducible reset-and-reconfigure toolkit for a UniFi USG + Controller + Ubuntu-servers + NAS lab network."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Apache-2.0" }
+authors = [
+    { name = "mllab-network contributors" },
+]
+keywords = ["unifi", "usg", "netdevops", "network-automation", "ssh", "samba", "homelab"]
+classifiers = [
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Topic :: System :: Networking",
+    "Topic :: System :: Systems Administration",
+    "Development Status :: 4 - Beta",
+]
+dependencies = [
+    "paramiko>=3.4",
+    "python-dotenv>=1.0",
+    "pyyaml>=6.0",
+    "requests>=2.32",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "ruff>=0.5",
+    "mypy>=1.10",
+]
+
+[project.urls]
+"Source" = "https://github.com/YOUR_ORG/mllab-network"
+"Issues" = "https://github.com/YOUR_ORG/mllab-network/issues"
+
+[project.scripts]
+mllab-usg = "mllab_net.usg:main"
+mllab-controller = "mllab_net.controller:main"
+mllab-scan = "mllab_net.scan:main"
+mllab-deploy-key = "mllab_net.ssh_deploy:main"
+mllab-static-ip = "mllab_net.static_ip:main"
+mllab-samba = "mllab_net.nas_samba:main"
+mllab-verify = "mllab_net.verify:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/mllab_net"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+src = ["src"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP"]
+ignore = ["E501"]  # line length
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]

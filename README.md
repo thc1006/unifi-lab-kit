@@ -1,0 +1,153 @@
+# mllab-network
+
+> Reproducible **reset-and-reconfigure** toolkit for a small lab network:
+> one UniFi Security Gateway, one UniFi switch, ~10 Ubuntu GPU servers, one NAS.
+>
+> If your router was reset, your port-forwards vanished, and you need to
+> re-provision the whole thing from a laptop — this is for you.
+
+---
+
+## Tested environment
+
+**This is the exact combination we verified end-to-end on 2026-03-03. Drift from any of these and mileage may vary.**
+
+| Layer                | Component                                              | Version / Firmware                   |
+| -------------------- | ------------------------------------------------------ | ------------------------------------ |
+| Gateway              | Ubiquiti UniFi Security Gateway 3P (USG-3P)            | EdgeOS 4.x (stock shipping firmware) |
+| Switch               | Ubiquiti UniFi Switch 16 150W (US-16-150W)             | stock firmware (unmanaged here)      |
+| Controller           | `lscr.io/linuxserver/unifi-network-application:latest` | UniFi Network 8.x (Jan 2026 image)   |
+| Controller host      | NAS, Docker 24+, macvlan + ipvlan networks             |                                      |
+| NAS OS               | Ubuntu-based NAS                                       | kernel 6.x                           |
+| NAS Samba            | native `samba`, installed via `apt`                    | 4.15.13                              |
+| Servers              | Ubuntu 20.04 / 22.04 / 24.04 LTS                       | netplan or NetworkManager            |
+| Python (this toolkit) | CPython                                                | 3.10, 3.11, 3.12                     |
+| Python deps          | `paramiko`, `python-dotenv`, `pyyaml`, `requests`      | see `pyproject.toml`                 |
+
+Tooling runs from any Linux / WSL / macOS workstation that can reach the LAN (or the WAN via SSH).
+
+---
+
+## TL;DR — one-paragraph description
+
+`mllab-network` is a thin Python package (`mllab_net`) fronted by a `Makefile`.
+Every action ("provision USG", "sync Controller rules", "deploy SSH keys", "install Samba on NAS", "verify end-to-end") is a `make` target.
+Credentials and IPs are read from a local `.env` (see `.env.example`) — **no secrets in code, nothing sensitive committed**.
+The "how we discovered this" scripts (~85 one-shot iterations) live under `archive/2026-03-03-initial-recovery/` so history stays discoverable without polluting the top level.
+
+---
+
+## Quickstart
+
+```bash
+# 1. Clone and set up the virtualenv
+git clone https://github.com/YOUR_ORG/mllab-network.git
+cd mllab-network
+make install                  # creates .venv and installs the package
+
+# 2. Provide your site-specific secrets
+cp .env.example .env
+$EDITOR .env                  # fill WAN_IP, USG_PASS, CONTROLLER_PASS, NAS_PASS, SERVER_PASS, ADMIN_SSH_PUBKEY
+
+# 3. (Optional) customise inventory
+cp inventory/hosts.example.yml inventory/hosts.yml
+$EDITOR inventory/hosts.yml   # list your servers, MAC addrs, port-forward ports
+
+# 4. Run diagnostics first — no secrets needed, purely read-only
+make diagnose
+
+# 5. Provision
+make provision                # USG + Controller + SSH keys + static IPs, in order
+make samba-install            # NAS native Samba (optional)
+
+# 6. Verify
+make verify
+```
+
+See `docs/RUNBOOK.md` for step-by-step recovery procedures, including what to do when the USG was factory-reset, when the Controller lost its database, or when a new server joins the lab.
+
+---
+
+## Repo layout
+
+```
+mllab-network/
+├── README.md                   ← you are here
+├── LICENSE                     ← Apache-2.0
+├── Makefile                    ← make diagnose | provision | verify | reset
+├── pyproject.toml              ← PEP 621 metadata (ruff, pytest, hatch)
+├── .env.example                ← credentials template — copy to .env
+├── .gitignore
+│
+├── configs/                    ← infrastructure config templates
+│   ├── config.gateway.json.example    # USG NAT hairpin + WAN alias
+│   ├── smb.conf.template              # NAS Samba shares
+│   └── ssh_config.example             # client-side SSH aliases
+│
+├── inventory/
+│   └── hosts.example.yml       ← devices, MACs, port-forwards (data, not code)
+│
+├── src/mllab_net/              ← Python package (paramiko-based)
+│   ├── config.py                      # loads .env
+│   ├── usg.py                         # EdgeOS CLI provisioning
+│   ├── controller.py                  # UniFi Controller REST API sync
+│   ├── controller_pwreset.py          # Mongo admin password reset
+│   ├── ssh_deploy.py                  # SSH key + NOPASSWD sudo deploy
+│   ├── scan.py                        # identify unknown hosts by credential probe
+│   ├── static_ip.py                   # convert netplan/nmcli to static
+│   ├── nas_samba.py                   # native Samba install on NAS
+│   └── verify.py                      # post-deploy audit
+│
+├── scripts/                    ← shell helpers (no credentials)
+│   ├── diagnose.sh             # network reachability probe
+│   └── tcp_portscan.sh         # WAN port + internal SSH sweep
+│
+├── docs/
+│   ├── NETWORK_TOPOLOGY.md     ← redacted architecture reference
+│   ├── RUNBOOK.md              ← "the network is down, do this" procedures
+│   ├── architecture.md         ← Mermaid C4 diagrams
+│   └── adr/                    ← numbered architecture decision records
+│       ├── 0001-edgeos-cli-over-controller.md
+│       ├── 0002-native-samba-over-docker.md
+│       ├── 0003-port-445-blocked-workarounds.md
+│       └── 0004-paramiko-over-ansible.md
+│
+├── tests/                      ← pytest scaffolding (future)
+│
+├── archive/                    ← read-only history — do NOT modify
+│   └── 2026-03-03-initial-recovery/
+│       ├── README.md                  # explains what's here and why
+│       └── *.py / *.sh                # 85+ one-shot recovery scripts
+│
+└── _secrets/                   ← local-only, gitignored
+    └── README.md                      # place .env copy, private CSV, etc. here
+```
+
+---
+
+## What this does *not* do
+
+- **It is not Ansible.** The point is to run a handful of imperative Python scripts from a laptop, not to manage hundreds of devices declaratively. If your lab grows past ~20 hosts, migrate to Ansible or Nornir — the `src/mllab_net/` layout maps cleanly to roles.
+- **It is not MBSE.** For a lab this size, SysML/Cameo ceremony costs more than it buys. We use ADRs + Mermaid C4 + YAML inventory instead — see `docs/adr/` for the reasoning.
+- **It is not vendor-agnostic.** Tested only against the specific hardware and firmware listed in the table above. Different UniFi firmware may have different CLI syntax.
+
+---
+
+## Safety
+
+- All scripts default to **dry-run off** — they *do* make changes. Review the file before the first invocation.
+- Every destructive target under `make` either prompts or requires `CONFIRM=yes`.
+- `pre-restructure-2026-04-18` is tagged as a rollback point. If anything goes sideways during your first run:
+  ```bash
+  git reset --hard pre-restructure-2026-04-18
+  ```
+
+---
+
+## Contributing
+
+See `CONTRIBUTING.md`. The short version: keep `src/mllab_net/` credentials-free (everything from `.env`), add a test where you can, and if you supersede an existing flow, move the old one into `archive/` with a dated sub-folder — don't delete history.
+
+## License
+
+Apache License 2.0 — see `LICENSE`.

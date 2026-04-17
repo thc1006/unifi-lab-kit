@@ -1,0 +1,48 @@
+# Secrets — NEVER commit
+.env
+.env.*
+!.env.example
+_secrets/**
+!_secrets/README.md
+!_secrets/.gitkeep
+
+# Inventory with real credentials
+inventory/hosts.yml
+inventory/hosts.*.yml
+!inventory/hosts.example.yml
+
+# SSH artifacts
+*.pem
+*.key
+id_rsa*
+id_ed25519*
+known_hosts
+
+# Legacy raw CSV / Excel exports with passwords
+server-*.csv
+server-*.xlsx
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.venv/
+venv/
+dist/
+build/
+
+# Editor / OS
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*~
+
+# Windows reserved-name artifacts
+nul
+NUL
