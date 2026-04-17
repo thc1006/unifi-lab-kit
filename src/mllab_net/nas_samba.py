@@ -9,10 +9,9 @@ from __future__ import annotations
 import string
 import sys
 import time
-from pathlib import Path
 
-from .config import REPO_ROOT, Settings
 from ._ssh import exec_capture, ssh_connect
+from .config import REPO_ROOT, Settings
 
 
 def render_smb_conf(settings: Settings) -> str:

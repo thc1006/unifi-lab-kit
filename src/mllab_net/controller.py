@@ -17,7 +17,6 @@ import json
 import sys
 import time
 
-from .config import Settings, load_servers
 from ._ssh import (
     exec_capture,
     interactive_shell_commands,
@@ -25,6 +24,7 @@ from ._ssh import (
     put_file_into_container,
     ssh_connect,
 )
+from .config import Settings, load_servers
 
 
 def _api(

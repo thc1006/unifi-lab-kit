@@ -6,8 +6,8 @@ from __future__ import annotations
 
 import sys
 
-from .config import Settings, load_servers
 from ._ssh import exec_capture, ssh_connect, tcp_probe
+from .config import Settings, load_servers
 
 
 def check_usg(settings: Settings) -> list[tuple[str, bool, str]]:

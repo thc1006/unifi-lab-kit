@@ -6,8 +6,8 @@ from __future__ import annotations
 
 import sys
 
-from .config import Settings, load_servers
 from ._ssh import exec_capture, ssh_connect
+from .config import Settings, load_servers
 
 
 def deploy_to_one(host: str, user: str, password: str, pubkey: str, *, setup_nopasswd: bool) -> bool:

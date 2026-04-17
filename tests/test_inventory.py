@@ -40,13 +40,17 @@ def test_example_inventory_server_entries_are_well_formed() -> None:
 
 
 def test_example_inventory_port_convention() -> None:
-    """External port must be 12 + last two digits of internal IP, per convention."""
+    """External port follows 12000 + (last_octet mod 100) * 10 slot convention.
+
+    So .106 -> 12060, .123 -> 12230, .111 -> 12110. The NAS (.129) is
+    intentionally NOT in the ``servers:`` list and is exempt.
+    """
     path = ROOT / "inventory" / "hosts.example.yml"
     with path.open("r", encoding="utf-8") as f:
         data = yaml.safe_load(f)
     for s in data["servers"]:
         last = int(s["internal_ip"].rsplit(".", 1)[-1])
-        expected = 12000 + last * 10
+        expected = 12000 + (last % 100) * 10
         assert s["external_port"] == expected, (
             f"{s['name']}: expected external_port {expected}, got {s['external_port']}"
         )

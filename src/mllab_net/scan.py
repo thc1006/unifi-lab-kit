@@ -13,8 +13,8 @@ from __future__ import annotations
 import argparse
 import sys
 
-from .config import Settings
 from ._ssh import exec_capture, ssh_connect
+from .config import Settings
 
 
 def expand_range(spec: str) -> list[str]:

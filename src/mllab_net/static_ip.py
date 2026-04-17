@@ -10,9 +10,8 @@ from __future__ import annotations
 import sys
 import time
 
-from .config import Settings, load_servers
 from ._ssh import exec_capture, ssh_connect, tcp_probe
-
+from .config import Settings, load_servers
 
 NETPLAN_TEMPLATE = """network:
   version: 2

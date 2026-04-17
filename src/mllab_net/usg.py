@@ -9,8 +9,8 @@ from __future__ import annotations
 import argparse
 import sys
 
-from .config import Settings, load_servers
 from ._ssh import interactive_shell_commands, ssh_connect, tcp_probe
+from .config import Settings, load_servers
 
 
 def build_command_sequence(settings: Settings, servers: list) -> list[tuple[str, float]]:
@@ -50,7 +50,7 @@ def build_command_sequence(settings: Settings, servers: list) -> list[tuple[str,
         cmds.extend([
             (f"set port-forward rule {idx} description {desc}", 0.8),
             (f"set port-forward rule {idx} forward-to address {srv.internal_ip}", 0.8),
-            ("set port-forward rule {} forward-to port 22".format(idx), 0.8),
+            (f"set port-forward rule {idx} forward-to port 22", 0.8),
             (f"set port-forward rule {idx} original-port {srv.external_port}", 0.8),
             (f"set port-forward rule {idx} protocol tcp", 0.8),
         ])

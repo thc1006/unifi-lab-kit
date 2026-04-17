@@ -11,8 +11,8 @@ from __future__ import annotations
 import sys
 import time
 
-from .config import Settings
 from ._ssh import exec_capture, put_file_into_container, ssh_connect
+from .config import Settings
 
 
 def main(argv: list[str] | None = None) -> int:
