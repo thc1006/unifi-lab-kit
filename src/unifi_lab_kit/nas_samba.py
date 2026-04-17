@@ -2,7 +2,7 @@
 
 Replaces any containerised SMB setup. See docs/adr/0002-native-samba-over-docker.md.
 
-    $ python -m mllab_net.nas_samba
+    $ python -m unifi_lab_kit.nas_samba
 """
 from __future__ import annotations
 

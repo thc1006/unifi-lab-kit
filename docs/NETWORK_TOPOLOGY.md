@@ -89,7 +89,7 @@ If you're standing up a new NAS from scratch, skip the legacy-nat bridge — it 
 
 - **Controller Force-Provision will wipe EdgeOS CLI settings.** Always edit `/config/config.boot` on the USG directly.
 - **`commit` on EdgeOS is not atomic across reboots.** You must `save` after `commit`, or reboots revert the change.
-- **UniFi Controller stores port-forwards separately from what the USG actually applies.** After manual USG edits, run `mllab-controller` to resync so the Controller doesn't re-push stale data on the next provision.
+- **UniFi Controller stores port-forwards separately from what the USG actually applies.** After manual USG edits, run `ulk-controller` to resync so the Controller doesn't re-push stale data on the next provision.
 - **NAS macvlan containers cannot ping the NAS host by default** because of Linux kernel bridging rules. The `host shim` veth is the standard workaround.
 
 ---

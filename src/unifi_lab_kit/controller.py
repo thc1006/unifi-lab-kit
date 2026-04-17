@@ -7,8 +7,8 @@ Also exposes:
 The Controller is treated as a reflection of the USG — never the other way
 round (see docs/adr/0001-edgeos-cli-over-controller.md).
 
-    $ python -m mllab_net.controller          # full sync
-    $ python -m mllab_net.controller --adopt  # also send adopt command
+    $ python -m unifi_lab_kit.controller          # full sync
+    $ python -m unifi_lab_kit.controller --adopt  # also send adopt command
 """
 from __future__ import annotations
 

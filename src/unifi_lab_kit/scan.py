@@ -5,8 +5,8 @@ hosts). For every target IP it tries every (user, password) pair recorded in
 .env until one succeeds, then dumps hostname / CPU / GPU / RAM / MAC for
 documentation purposes.
 
-    $ python -m mllab_net.scan 192.168.1.50 192.168.1.51 ...
-    $ python -m mllab_net.scan --range 192.168.1.100-199
+    $ python -m unifi_lab_kit.scan 192.168.1.50 192.168.1.51 ...
+    $ python -m unifi_lab_kit.scan --range 192.168.1.100-199
 """
 from __future__ import annotations
 

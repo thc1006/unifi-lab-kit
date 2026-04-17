@@ -1,6 +1,6 @@
 """Deploy the admin SSH public key (and ensure NOPASSWD sudo) on every server in inventory.
 
-    $ python -m mllab_net.ssh_deploy
+    $ python -m unifi_lab_kit.ssh_deploy
 """
 from __future__ import annotations
 

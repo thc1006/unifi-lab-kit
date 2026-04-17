@@ -10,8 +10,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
-from mllab_net.config import ServerEntry, Settings  # noqa: E402
-from mllab_net.usg import build_command_sequence  # noqa: E402
+from unifi_lab_kit.config import ServerEntry, Settings  # noqa: E402
+from unifi_lab_kit.usg import build_command_sequence  # noqa: E402
 
 
 def _fake_settings() -> Settings:

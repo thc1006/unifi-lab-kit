@@ -13,7 +13,7 @@ The failure mode was hard to diagnose (container "Running", port "listening", ju
 
 **Install `samba` from the distro package manager on the NAS host itself.** Bind explicitly to the LAN IP and restrict `hosts allow` to the LAN subnet. Manage via systemd.
 
-See `src/mllab_net/nas_samba.py` and `configs/smb.conf.template`.
+See `src/unifi_lab_kit/nas_samba.py` and `configs/smb.conf.template`.
 
 ## Consequences
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ============================================================================
-#  mllab-network — read-only network diagnostics.
+#  unifi-lab-kit — read-only network diagnostics.
 #  Run from anywhere with LAN or WAN reachability. No credentials required.
 #
 #  Usage: bash scripts/diagnose.sh

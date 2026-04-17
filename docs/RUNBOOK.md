@@ -30,7 +30,7 @@ If `provision-usg` fails with "Connection refused" the USG isn't listening for S
 If you still have SSH to the NAS:
 ```bash
 # Reset the admin password using the value from .env (CONTROLLER_PASS)
-.venv/bin/python -m mllab_net.controller_pwreset
+.venv/bin/python -m unifi_lab_kit.controller_pwreset
 ```
 This reaches into the `unifi` Docker container, updates the MongoDB `admin` collection with a new SHA-512 hash, and verifies login.
 

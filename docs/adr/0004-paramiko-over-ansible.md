@@ -7,7 +7,7 @@
 
 The toolkit was born as ~95 ad-hoc `paramiko` / `requests` scripts during the 2026-02 to 2026-03 recovery. Industry advice for NetDevOps at scale is **Ansible** (or Nornir), which maps "clone, fill inventory, run one playbook" more ergonomically than a collection of Python scripts.
 
-We considered rewriting `src/mllab_net/` as a set of Ansible roles before the first open-source release.
+We considered rewriting `src/unifi_lab_kit/` as a set of Ansible roles before the first open-source release.
 
 ## Decision
 
@@ -18,7 +18,7 @@ We considered rewriting `src/mllab_net/` as a set of Ansible roles before the fi
 - **Pros**
   - Zero rewrite cost at open-source time. The scripts that verifiably worked on 2026-03-03 keep working.
   - Contributors only need Python knowledge, not Ansible's mental model (handlers, `register`, idempotence conventions).
-  - The `src/mllab_net/<module>.py` layout maps cleanly to Ansible `roles/<module>/tasks/main.yml` later — nothing precludes migration.
+  - The `src/unifi_lab_kit/<module>.py` layout maps cleanly to Ansible `roles/<module>/tasks/main.yml` later — nothing precludes migration.
 - **Cons**
   - No free idempotence guarantee: every script must handle "already-configured" explicitly.
   - Harder to scale past ~20 hosts. At that size, revisit this ADR.

@@ -1,6 +1,6 @@
 """Post-deploy audit: WAN persistence on USG, port-forwards, SSH+sudo+key on every server.
 
-    $ python -m mllab_net.verify
+    $ python -m unifi_lab_kit.verify
 """
 from __future__ import annotations
 

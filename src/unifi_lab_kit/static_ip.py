@@ -3,7 +3,7 @@
 Auto-detects whether a host uses netplan or NetworkManager and writes the
 appropriate config. Skips hosts that are already static.
 
-    $ python -m mllab_net.static_ip
+    $ python -m unifi_lab_kit.static_ip
 """
 from __future__ import annotations
 

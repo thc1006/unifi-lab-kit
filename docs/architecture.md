@@ -8,7 +8,7 @@ GitHub renders these natively. Re-render offline with `mmdc`.
 
 ```mermaid
 C4Context
-    title mllab-network — system context
+    title unifi-lab-kit — system context
     Person(admin, "Lab administrator", "Runs make targets from a laptop")
     System_Boundary(lab, "Lab subnet") {
         System(usg, "USG-3P", "Edge gateway\nport-forwards & NAT")
@@ -60,8 +60,8 @@ sequenceDiagram
     participant Controller as UniFi Controller
 
     Admin->>Makefile: make provision
-    Makefile->>usg.py: python -m mllab_net.usg
-    usg.py->>USG: SSH mllab@LAN_GATEWAY
+    Makefile->>usg.py: python -m unifi_lab_kit.usg
+    usg.py->>USG: SSH USG_USER@LAN_GATEWAY
     usg.py->>USG: configure; set WAN static
     usg.py->>USG: delete port-forward
     loop each rule from inventory
@@ -69,7 +69,7 @@ sequenceDiagram
     end
     usg.py->>USG: commit; save
     USG-->>usg.py: committed
-    Makefile->>controller.py: python -m mllab_net.controller
+    Makefile->>controller.py: python -m unifi_lab_kit.controller
     controller.py->>Controller: POST /api/login
     controller.py->>Controller: DELETE all /rest/portforward
     loop each rule

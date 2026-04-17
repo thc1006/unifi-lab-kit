@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Date:** 2026-03-03
-- **Deciders:** mllab-network contributors
+- **Deciders:** unifi-lab-kit contributors
 
 ## Context
 
@@ -15,7 +15,7 @@ During the 2026-02 through 2026-03 recovery we hit the Controller path twice. Bo
 
 ## Decision
 
-**Port-forwards, WAN static IP, and NAT hairpin rules are set directly in the USG's EdgeOS CLI and saved into `/config/config.boot`.** The Controller is treated as a *reflection* of that state — we resync Controller rules to match the USG (via `mllab-controller`), never the other way around.
+**Port-forwards, WAN static IP, and NAT hairpin rules are set directly in the USG's EdgeOS CLI and saved into `/config/config.boot`.** The Controller is treated as a *reflection* of that state — we resync Controller rules to match the USG (via `ulk-controller`), never the other way around.
 
 ## Consequences
 
@@ -24,7 +24,7 @@ During the 2026-02 through 2026-03 recovery we hit the Controller path twice. Bo
   - The USG `/config/config.boot` file is the single source of truth; easy to back up and diff.
 - **Cons**
   - The Controller UI can still show stale rules if someone edits them there — `make provision-controller` is the reconciliation step and must be run after every USG change.
-  - If the USG is fully factory-reset (lost `config.boot`), we re-apply from `mllab-net.usg` — it's idempotent.
+  - If the USG is fully factory-reset (lost `config.boot`), we re-apply from `unifi_lab_kit.usg` — it's idempotent.
 
 ## Alternatives considered
 

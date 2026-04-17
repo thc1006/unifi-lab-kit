@@ -3,14 +3,14 @@ requires = ["hatchling>=1.24"]
 build-backend = "hatchling.build"
 
 [project]
-name = "mllab-network"
+name = "unifi-lab-kit"
 version = "0.1.0"
 description = "Reproducible reset-and-reconfigure toolkit for a UniFi USG + Controller + Ubuntu-servers + NAS lab network."
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "Apache-2.0" }
 authors = [
-    { name = "mllab-network contributors" },
+    { name = "unifi-lab-kit contributors" },
 ]
 keywords = ["unifi", "usg", "netdevops", "network-automation", "ssh", "samba", "homelab"]
 classifiers = [
@@ -37,20 +37,20 @@ dev = [
 ]
 
 [project.urls]
-"Source" = "https://github.com/YOUR_ORG/mllab-network"
-"Issues" = "https://github.com/YOUR_ORG/mllab-network/issues"
+"Source" = "https://github.com/thc1006/unifi-lab-kit"
+"Issues" = "https://github.com/thc1006/unifi-lab-kit/issues"
 
 [project.scripts]
-mllab-usg = "mllab_net.usg:main"
-mllab-controller = "mllab_net.controller:main"
-mllab-scan = "mllab_net.scan:main"
-mllab-deploy-key = "mllab_net.ssh_deploy:main"
-mllab-static-ip = "mllab_net.static_ip:main"
-mllab-samba = "mllab_net.nas_samba:main"
-mllab-verify = "mllab_net.verify:main"
+ulk-usg = "unifi_lab_kit.usg:main"
+ulk-controller = "unifi_lab_kit.controller:main"
+ulk-scan = "unifi_lab_kit.scan:main"
+ulk-deploy-key = "unifi_lab_kit.ssh_deploy:main"
+ulk-static-ip = "unifi_lab_kit.static_ip:main"
+ulk-samba = "unifi_lab_kit.nas_samba:main"
+ulk-verify = "unifi_lab_kit.verify:main"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/mllab_net"]
+packages = ["src/unifi_lab_kit"]
 
 [tool.ruff]
 line-length = 100

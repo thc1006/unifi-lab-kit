@@ -1,4 +1,4 @@
-# mllab-network SSH client config (template).
+# unifi-lab-kit SSH client config (template).
 #
 # Copy to ~/.ssh/config (or `Include`-import it) and replace the two sentinels
 # below with values from your .env:

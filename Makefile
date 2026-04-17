@@ -1,4 +1,4 @@
-# mllab-network — user-facing entry points.
+# unifi-lab-kit — user-facing entry points.
 #
 # Inspired by kubespray's top-level `cluster.yml` / `reset.yml` / `recover-*.yml`
 # pattern: the developer never needs to know which Python module to import;
@@ -33,36 +33,36 @@ diagnose:  ## Run read-only network diagnostics from current host
 provision: provision-usg provision-controller deploy-keys static-ip  ## Full provision (USG + Controller + SSH keys + static IPs)
 
 provision-usg:  ## Configure USG WAN static IP and all port-forward rules via EdgeOS CLI
-	$(ACT) $(PY) -m mllab_net.usg
+	$(ACT) $(PY) -m unifi_lab_kit.usg
 
 provision-controller:  ## Sync UniFi Controller port-forward rules with USG
-	$(ACT) $(PY) -m mllab_net.controller
+	$(ACT) $(PY) -m unifi_lab_kit.controller
 
 deploy-keys:  ## Deploy admin SSH public key to every server's authorized_keys
-	$(ACT) $(PY) -m mllab_net.ssh_deploy
+	$(ACT) $(PY) -m unifi_lab_kit.ssh_deploy
 
 static-ip:  ## Convert every server to static IP (netplan or nmcli)
-	$(ACT) $(PY) -m mllab_net.static_ip
+	$(ACT) $(PY) -m unifi_lab_kit.static_ip
 
 samba-install:  ## Install native Samba on NAS and expose shares to LAN only
-	$(ACT) $(PY) -m mllab_net.nas_samba
+	$(ACT) $(PY) -m unifi_lab_kit.nas_samba
 
 # ---------- Discovery ----------
 
 scan:  ## Identify unknown servers on LAN by probing with known credentials
-	$(ACT) $(PY) -m mllab_net.scan
+	$(ACT) $(PY) -m unifi_lab_kit.scan
 
 # ---------- Verification ----------
 
 verify:  ## Post-deploy audit: WAN/port-forward persistence, SSH, static IPs, sudo, keys
-	$(ACT) $(PY) -m mllab_net.verify
+	$(ACT) $(PY) -m unifi_lab_kit.verify
 
 # ---------- Recovery ----------
 
 reset:  ## Emergency: reset USG + Controller back to known-good state (requires .env)
 	@echo "RESET is destructive. Re-run with CONFIRM=yes to proceed." && test "$(CONFIRM)" = "yes"
-	$(ACT) $(PY) -m mllab_net.usg --reset
-	$(ACT) $(PY) -m mllab_net.controller --reset
+	$(ACT) $(PY) -m unifi_lab_kit.usg --reset
+	$(ACT) $(PY) -m unifi_lab_kit.controller --reset
 
 # ---------- Dev ----------
 

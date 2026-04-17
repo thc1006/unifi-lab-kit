@@ -2,7 +2,7 @@
 
 All state comes from .env + inventory/hosts.yml. Idempotent: safe to re-run.
 
-    $ python -m mllab_net.usg
+    $ python -m unifi_lab_kit.usg
 """
 from __future__ import annotations
 

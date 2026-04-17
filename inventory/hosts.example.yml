@@ -1,9 +1,9 @@
-# mllab-network inventory template.
+# unifi-lab-kit inventory template.
 #
 # Copy to inventory/hosts.yml and fill in real values. hosts.yml is gitignored;
 # hosts.example.yml is the committed structure reference.
 #
-# Tools read this file via src/mllab_net/config.py.
+# Tools read this file via src/unifi_lab_kit/config.py.
 
 gateway:
   # USG WAN-side (public)

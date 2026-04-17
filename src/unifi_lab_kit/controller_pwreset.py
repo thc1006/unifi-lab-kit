@@ -4,7 +4,7 @@ Use when you've locked yourself out of the Controller UI but still have
 SSH to the NAS where it runs. The Controller user/password you want to
 restore is read from .env (CONTROLLER_USER / CONTROLLER_PASS).
 
-    $ python -m mllab_net.controller_pwreset
+    $ python -m unifi_lab_kit.controller_pwreset
 """
 from __future__ import annotations
 
