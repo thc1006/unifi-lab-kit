@@ -56,6 +56,9 @@ packages = ["src/mllab_net"]
 line-length = 100
 target-version = "py310"
 src = ["src"]
+# archive/ is frozen history; _secrets/ is local-only and gitignored.
+# Keeping both out of lint so CI doesn't fight legacy code or private backups.
+extend-exclude = ["archive", "_secrets"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "B", "UP"]
