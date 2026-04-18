@@ -1,5 +1,9 @@
 # unifi-lab-kit
 
+[![ci](https://github.com/thc1006/unifi-lab-kit/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/thc1006/unifi-lab-kit/actions/workflows/ci.yml)
+[![license](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](./LICENSE)
+[![python](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12-blue.svg)](./pyproject.toml)
+
 > Reproducible **reset-and-reconfigure** toolkit for a small lab network:
 > one UniFi Security Gateway, one UniFi switch, ~10 Ubuntu GPU servers, one NAS.
 >
@@ -136,11 +140,9 @@ unifi-lab-kit/
 ## Safety
 
 - All scripts default to **dry-run off** — they *do* make changes. Review the file before the first invocation.
-- Every destructive target under `make` either prompts or requires `CONFIRM=yes`.
-- `pre-restructure-2026-04-18` is tagged as a rollback point. If anything goes sideways during your first run:
-  ```bash
-  git reset --hard pre-restructure-2026-04-18
-  ```
+- Destructive operations (`make reset`, `python -m unifi_lab_kit.usg --reset`, `python -m unifi_lab_kit.controller --reset`) all require `CONFIRM=yes` in the environment. The gate is enforced in Python so it cannot be bypassed by invoking the module directly.
+- **SSH host-key trust:** `paramiko.AutoAddPolicy` is used throughout, meaning the tool will accept and silently pin any SSH host key on first contact. This is deliberate — the whole point of the toolkit is to reset hardware whose host keys *will* change. If you run this on a stable, production-grade network, override the policy by seeding `~/.ssh/known_hosts` ahead of time and patching `src/unifi_lab_kit/_ssh.py` to use `RejectPolicy`.
+- **Credential hygiene:** everything sensitive lives in `.env` (gitignored). Real inventories (CSV, MAC lists, USG config.boot backups) belong in `_secrets/`, which is also gitignored. See `SECURITY.md` for the vulnerability-disclosure process.
 
 ---
 
