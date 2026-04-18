@@ -16,7 +16,7 @@ from typing import Any
 try:
     from dotenv import load_dotenv
 except ImportError:  # pragma: no cover
-    def load_dotenv(*_args: Any, **_kwargs: Any) -> bool:
+    def load_dotenv(*_args: Any, **_kwargs: Any) -> bool:  # type: ignore[misc]
         return False
 
 try:

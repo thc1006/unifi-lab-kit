@@ -39,6 +39,25 @@ jobs:
       - name: Pytest
         run: pytest -q
 
+  mypy:
+    name: mypy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install package + type stubs
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]" types-paramiko types-PyYAML types-requests
+
+      - name: Mypy
+        run: mypy
+
   shellcheck:
     name: shellcheck
     runs-on: ubuntu-latest
@@ -61,3 +80,28 @@ jobs:
 
       - name: Regression scan
         run: bash .github/scripts/secret_regression_scan.sh
+
+  gitleaks:
+    name: gitleaks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # gitleaks scans history, so we need it
+          fetch-depth: 0
+
+      - name: Install gitleaks
+        run: |
+          GL_VERSION=8.24.2
+          curl -sSfL \
+            "https://github.com/gitleaks/gitleaks/releases/download/v${GL_VERSION}/gitleaks_${GL_VERSION}_linux_x64.tar.gz" \
+            | tar -xz gitleaks
+          sudo install -m 0755 gitleaks /usr/local/bin/gitleaks
+          gitleaks version
+
+      - name: Run gitleaks
+        # --redact so the diff in job output does not itself print secrets
+        # --no-banner for quieter CI logs
+        # Scan the current commit only; history already redacted in the
+        # initial open-source commit.
+        run: gitleaks detect --source . --redact --no-banner --verbose

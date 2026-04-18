@@ -4,9 +4,15 @@
 #
 #  This is NOT a general-purpose secret scanner. It is a lightweight fence
 #  that rejects any commit which reintroduces one of the specific literal
-#  patterns that were scrubbed from this repository before the initial open-
-#  source release. Layer gitleaks / trufflehog on top if you want broader
-#  coverage.
+#  patterns that were scrubbed from this repository before the initial
+#  open-source release. Broader coverage comes from the gitleaks job in
+#  ci.yml; this scan is targeted at the "did a developer accidentally
+#  un-scrub a historical archive file" case, which gitleaks' entropy-based
+#  heuristics would miss.
+#
+#  Maintenance: if you add a new archive cohort that required scrubbing
+#  (e.g. a second 2027-xx recovery), extend PATTERNS below AND update the
+#  replacement table documented in the relevant archive/<date>/README.md.
 #
 #  Exits 0 on clean, 1 if any regression is found.
 # ============================================================================

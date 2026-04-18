@@ -61,7 +61,7 @@ def interactive_shell_commands(
 
     outputs: list[str] = []
     for cmd, wait in commands:
-        shell.send(cmd + "\n")
+        shell.send((cmd + "\n").encode("utf-8"))
         time.sleep(wait)
         buf = ""
         while shell.recv_ready():
