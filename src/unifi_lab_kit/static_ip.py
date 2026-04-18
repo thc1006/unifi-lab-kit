@@ -7,6 +7,7 @@ appropriate config. Skips hosts that are already static.
 """
 from __future__ import annotations
 
+import shlex
 import sys
 import time
 
@@ -28,6 +29,30 @@ NETPLAN_TEMPLATE = """network:
 """
 
 
+def _sudo(password: str, cmd: str) -> str:
+    return f"echo {shlex.quote(password)} | sudo -S -p '' {cmd}"
+
+
+def _run_async_then_wait(client, cmd: str, wait: float = 3.0) -> None:
+    """Launch `cmd` over a fresh channel, block briefly so the command has
+    time to take effect before the outer SSH session is torn down.
+
+    Used for `nmcli con up` and `netplan apply` when the interface is about
+    to change IP — the foreground SSH connection will drop, so we have to
+    start the command and give the kernel long enough to apply it.
+    """
+    ch = client.get_transport().open_session()
+    ch.exec_command(cmd)
+    # Poll for the command to finish OR for the session to drop (because
+    # the interface went down). Either outcome is fine — we just need to
+    # avoid returning while the command is still queued.
+    deadline = time.time() + wait
+    while time.time() < deadline:
+        if ch.exit_status_ready():
+            return
+        time.sleep(0.2)
+
+
 def apply_one(host: str, user: str, password: str, settings: Settings, target_ip: str, ip_mode: str) -> None:
     with ssh_connect(host, user, password) as c:
         nm_active = exec_capture(c, "systemctl is-active NetworkManager 2>/dev/null", timeout=5) == "active"
@@ -45,26 +70,33 @@ def apply_one(host: str, user: str, password: str, settings: Settings, target_ip
 
         print(f"  iface={iface} nm_active={nm_active}")
 
+        gw_q = shlex.quote(settings.lan_gateway)
+        dns_q = shlex.quote(f"{settings.dns_primary},{settings.dns_secondary}")
+
         if nm_active or ip_mode == "static_nmcli":
             con_name = exec_capture(c, "nmcli -t -f NAME con show --active | head -1", timeout=5)
             if not con_name:
                 print(f"  {host} no active NetworkManager connection; skipping.")
                 return
-            cmd = (
-                f"echo '{password}' | sudo -S nmcli con mod '{con_name}' "
+            con_q = shlex.quote(con_name)
+            cmd = _sudo(
+                password,
+                f"nmcli con mod {con_q} "
                 f"ipv4.method manual "
-                f"ipv4.addresses {target_ip}/24 "
-                f"ipv4.gateway {settings.lan_gateway} "
-                f"ipv4.dns '{settings.dns_primary},{settings.dns_secondary}'"
+                f"ipv4.addresses {shlex.quote(target_ip + '/24')} "
+                f"ipv4.gateway {gw_q} "
+                f"ipv4.dns {dns_q}",
             )
             out = exec_capture(c, cmd, timeout=15)
             print(f"  nmcli: {out or 'OK'}")
+            up_cmd = _sudo(password, f"nmcli con up {con_q}")
             if host == target_ip:
-                exec_capture(c, f"echo '{password}' | sudo -S nmcli con up '{con_name}'", timeout=15)
+                exec_capture(c, up_cmd, timeout=15)
             else:
-                # starting an async session because connection will drop on IP change
-                ch = c.get_transport().open_session()
-                ch.exec_command(f"echo '{password}' | sudo -S nmcli con up '{con_name}'")
+                # IP is about to change; foreground channel will die.
+                # Detach onto a separate channel and wait so the command
+                # has actually reached the kernel before we tear down.
+                _run_async_then_wait(c, up_cmd)
         else:
             netplan_file = exec_capture(c, "ls /etc/netplan/*.yaml 2>/dev/null | head -1", timeout=5)
             if not netplan_file:
@@ -73,17 +105,19 @@ def apply_one(host: str, user: str, password: str, settings: Settings, target_ip
                 iface=iface, ip=target_ip, gw=settings.lan_gateway,
                 dns1=settings.dns_primary, dns2=settings.dns_secondary,
             )
-            exec_capture(c, f"echo '{password}' | sudo -S cp {netplan_file} {netplan_file}.bak 2>/dev/null", timeout=5)
+            netplan_q = shlex.quote(netplan_file)
+            exec_capture(c, _sudo(password, f"cp {netplan_q} {netplan_q}.bak") + " 2>/dev/null", timeout=5)
+            cat_redirect = shlex.quote(f"cat > {netplan_file}")
             write = (
-                f"echo '{password}' | sudo -S bash -c 'cat > {netplan_file}' << 'NPEOF'\n"
+                f"{_sudo(password, f'bash -c {cat_redirect}')} << 'NPEOF'\n"
                 f"{content}NPEOF"
             )
             exec_capture(c, write, timeout=5)
+            apply_cmd = _sudo(password, "netplan apply")
             if host == target_ip:
-                exec_capture(c, f"echo '{password}' | sudo -S netplan apply", timeout=15)
+                exec_capture(c, apply_cmd, timeout=15)
             else:
-                ch = c.get_transport().open_session()
-                ch.exec_command(f"echo '{password}' | sudo -S netplan apply")
+                _run_async_then_wait(c, apply_cmd)
 
 
 def main(argv: list[str] | None = None) -> int:

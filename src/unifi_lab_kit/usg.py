@@ -7,6 +7,7 @@ All state comes from .env + inventory/hosts.yml. Idempotent: safe to re-run.
 from __future__ import annotations
 
 import argparse
+import os
 import sys
 
 from ._ssh import interactive_shell_commands, ssh_connect, tcp_probe
@@ -68,6 +69,15 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--skip-verify", action="store_true", help="Skip the post-commit TCP probe.")
     parser.add_argument("--reset", action="store_true", help="Wipe port-forwards and WAN back to DHCP (dangerous).")
     args = parser.parse_args(argv)
+
+    if args.reset and os.environ.get("CONFIRM") != "yes":
+        print(
+            "--reset will wipe ALL port-forwards and flip WAN back to DHCP.\n"
+            "If you are connected via WAN the SSH session will drop instantly.\n"
+            "Re-run with CONFIRM=yes in the environment to proceed.",
+            file=sys.stderr,
+        )
+        return 2
 
     settings = Settings.load()
     servers = load_servers()

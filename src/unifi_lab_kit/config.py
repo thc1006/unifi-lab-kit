@@ -31,21 +31,27 @@ INVENTORY_PATH = REPO_ROOT / "inventory" / "hosts.yml"
 INVENTORY_EXAMPLE_PATH = REPO_ROOT / "inventory" / "hosts.example.yml"
 
 
-def _required(name: str) -> str:
-    val = os.environ.get(name)
-    if val is None or val == "" or val.startswith("REPLACE_ME"):
-        raise RuntimeError(
-            f"environment variable {name!r} is missing or unset. "
-            f"Copy .env.example to .env and fill it in."
-        )
-    return val
+class _MissingEnv:
+    """Collector used during Settings.load to aggregate missing required
+    variables so we can report all of them in one error, instead of
+    raising on the first one the user happens to forget."""
 
+    def __init__(self) -> None:
+        self.names: list[str] = []
 
-def _optional(name: str, default: str = "") -> str:
-    val = os.environ.get(name, default)
-    if val.startswith("REPLACE_ME"):
-        return default
-    return val
+    def required(self, name: str) -> str:
+        val = os.environ.get(name)
+        if val is None or val == "" or val.startswith("REPLACE_ME"):
+            self.names.append(name)
+            return ""
+        return val
+
+    @staticmethod
+    def optional(name: str, default: str = "") -> str:
+        val = os.environ.get(name, default)
+        if val.startswith("REPLACE_ME"):
+            return default
+        return val
 
 
 @dataclass(frozen=True)
@@ -99,36 +105,43 @@ class Settings:
     @classmethod
     def load(cls) -> Settings:
         load_dotenv(ENV_PATH)
-        return cls(
-            wan_ip=_required("WAN_IP"),
-            wan_ip_alias=_optional("WAN_IP_ALIAS"),
-            wan_gateway=_required("WAN_GATEWAY"),
-            wan_netmask=_optional("WAN_NETMASK", "255.255.255.0"),
-            lan_subnet=_optional("LAN_SUBNET", "192.168.1.0/24"),
-            lan_gateway=_optional("LAN_GATEWAY", "192.168.1.1"),
-            dns_primary=_optional("DNS_PRIMARY", "1.1.1.1"),
-            dns_secondary=_optional("DNS_SECONDARY", "8.8.8.8"),
-            usg_ip=_optional("USG_IP", "192.168.1.1"),
-            usg_user=_required("USG_USER"),
-            usg_pass=_required("USG_PASS"),
-            usg_mac=_optional("USG_MAC"),
-            controller_host=_optional("CONTROLLER_HOST", "192.168.1.129"),
-            controller_https_port=int(_optional("CONTROLLER_HTTPS_PORT", "8443")),
-            controller_inform_port=int(_optional("CONTROLLER_INFORM_PORT", "8080")),
-            controller_user=_required("CONTROLLER_USER"),
-            controller_pass=_required("CONTROLLER_PASS"),
-            controller_docker_name=_optional("CONTROLLER_DOCKER_NAME", "unifi"),
-            nas_ip=_optional("NAS_IP", "192.168.1.129"),
-            nas_user=_required("NAS_USER"),
-            nas_pass=_required("NAS_PASS"),
-            server_primary_user=_optional("SERVER_PRIMARY_USER", "admin"),
-            server_secondary_user=_optional("SERVER_SECONDARY_USER", "ops"),
-            server_pass=_required("SERVER_PASS"),
-            admin_ssh_pubkey=_required("ADMIN_SSH_PUBKEY"),
-            samba_workgroup=_optional("SAMBA_WORKGROUP", "WORKGROUP"),
-            samba_netbios=_optional("SAMBA_NETBIOS", "NAS"),
-            samba_hosts_allow=_optional("SAMBA_HOSTS_ALLOW", "192.168.1.0/24"),
+        m = _MissingEnv()
+        instance = cls(
+            wan_ip=m.required("WAN_IP"),
+            wan_ip_alias=m.optional("WAN_IP_ALIAS"),
+            wan_gateway=m.required("WAN_GATEWAY"),
+            wan_netmask=m.optional("WAN_NETMASK", "255.255.255.0"),
+            lan_subnet=m.optional("LAN_SUBNET", "192.168.1.0/24"),
+            lan_gateway=m.optional("LAN_GATEWAY", "192.168.1.1"),
+            dns_primary=m.optional("DNS_PRIMARY", "1.1.1.1"),
+            dns_secondary=m.optional("DNS_SECONDARY", "8.8.8.8"),
+            usg_ip=m.optional("USG_IP", "192.168.1.1"),
+            usg_user=m.required("USG_USER"),
+            usg_pass=m.required("USG_PASS"),
+            usg_mac=m.optional("USG_MAC"),
+            controller_host=m.optional("CONTROLLER_HOST", "192.168.1.129"),
+            controller_https_port=int(m.optional("CONTROLLER_HTTPS_PORT", "8443")),
+            controller_inform_port=int(m.optional("CONTROLLER_INFORM_PORT", "8080")),
+            controller_user=m.required("CONTROLLER_USER"),
+            controller_pass=m.required("CONTROLLER_PASS"),
+            controller_docker_name=m.optional("CONTROLLER_DOCKER_NAME", "unifi"),
+            nas_ip=m.optional("NAS_IP", "192.168.1.129"),
+            nas_user=m.required("NAS_USER"),
+            nas_pass=m.required("NAS_PASS"),
+            server_primary_user=m.optional("SERVER_PRIMARY_USER", "admin"),
+            server_secondary_user=m.optional("SERVER_SECONDARY_USER", "ops"),
+            server_pass=m.required("SERVER_PASS"),
+            admin_ssh_pubkey=m.required("ADMIN_SSH_PUBKEY"),
+            samba_workgroup=m.optional("SAMBA_WORKGROUP", "WORKGROUP"),
+            samba_netbios=m.optional("SAMBA_NETBIOS", "NAS"),
+            samba_hosts_allow=m.optional("SAMBA_HOSTS_ALLOW", "192.168.1.0/24"),
         )
+        if m.names:
+            raise RuntimeError(
+                f"{len(m.names)} required env var(s) missing or unset: "
+                f"{', '.join(m.names)}. Copy .env.example to .env and fill them in."
+            )
+        return instance
 
 
 @dataclass(frozen=True)

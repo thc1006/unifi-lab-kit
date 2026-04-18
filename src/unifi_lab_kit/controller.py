@@ -14,8 +14,12 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 import time
+import uuid
+
+import paramiko
 
 from ._ssh import (
     exec_capture,
@@ -28,7 +32,7 @@ from .config import Settings, load_servers
 
 
 def _api(
-    nas_client,
+    nas_client: paramiko.SSHClient,
     container: str,
     https_port: int,
     method: str,
@@ -36,18 +40,32 @@ def _api(
     body: dict | None = None,
 ) -> str:
     curl = f"-b /tmp/uc -X {method} 'https://localhost:{https_port}/api/s/default/{path}'"
+    payload_path: str | None = None
     if body is not None:
-        payload_path = "/tmp/mllab_payload.json"
+        # Unique per-call path so concurrent API calls never clobber each
+        # other's payload, and so a crash mid-call leaves no residue that a
+        # later call might accidentally pick up.
+        payload_path = f"/tmp/ulk_payload_{uuid.uuid4().hex}.json"
         put_file_into_container(nas_client, container, payload_path, json.dumps(body))
         curl += f' -H "Content-Type: application/json" -d "$(cat {payload_path})"'
-    return exec_capture(
-        nas_client,
-        f"docker exec {container} curl -sk {curl} 2>&1",
-        timeout=20,
-    )
+    try:
+        return exec_capture(
+            nas_client,
+            f"docker exec {container} curl -sk {curl} 2>&1",
+            timeout=20,
+        )
+    finally:
+        if payload_path is not None:
+            exec_capture(
+                nas_client,
+                f"docker exec {container} rm -f {payload_path}",
+                timeout=5,
+            )
 
 
-def _api_get_data(nas_client, container: str, https_port: int, path: str) -> list[dict]:
+def _api_get_data(
+    nas_client: paramiko.SSHClient, container: str, https_port: int, path: str
+) -> list[dict]:
     raw = _api(nas_client, container, https_port, "GET", path)
     try:
         return json.loads(raw).get("data", [])
@@ -55,7 +73,9 @@ def _api_get_data(nas_client, container: str, https_port: int, path: str) -> lis
         return []
 
 
-def sync_portforwards(nas_client, settings: Settings, servers: list) -> tuple[int, int]:
+def sync_portforwards(
+    nas_client: paramiko.SSHClient, settings: Settings, servers: list
+) -> tuple[int, int]:
     """Delete all existing port-forward rules, re-create from inventory. Returns (deleted, created)."""
     existing = _api_get_data(nas_client, settings.controller_docker_name,
                              settings.controller_https_port, "rest/portforward")
@@ -82,7 +102,7 @@ def sync_portforwards(nas_client, settings: Settings, servers: list) -> tuple[in
     return len(existing), created
 
 
-def ensure_wan_static(nas_client, settings: Settings) -> None:
+def ensure_wan_static(nas_client: paramiko.SSHClient, settings: Settings) -> None:
     nets = _api_get_data(nas_client, settings.controller_docker_name,
                          settings.controller_https_port, "rest/networkconf")
     for n in nets:
@@ -104,7 +124,7 @@ def ensure_wan_static(nas_client, settings: Settings) -> None:
             return
 
 
-def adopt_usg(nas_client, settings: Settings) -> None:
+def adopt_usg(nas_client: paramiko.SSHClient, settings: Settings) -> None:
     if not settings.usg_mac or settings.usg_mac == "aa:bb:cc:dd:ee:ff":
         print("  USG_MAC not set in .env; skipping adopt.")
         return
@@ -127,6 +147,14 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--reconnect", action="store_true", help="set-inform on USG after sync.")
     parser.add_argument("--reset", action="store_true", help="Delete all Controller rules, leave empty.")
     args = parser.parse_args(argv)
+
+    if args.reset and os.environ.get("CONFIRM") != "yes":
+        print(
+            "--reset will DELETE every port-forward rule from the Controller.\n"
+            "Re-run with CONFIRM=yes in the environment to proceed.",
+            file=sys.stderr,
+        )
+        return 2
 
     settings = Settings.load()
     servers = load_servers()
